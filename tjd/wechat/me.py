@@ -81,7 +81,8 @@ def autoPayMachineTest(params):
         carNumLen=len(params['toSearchCarNum']);
         count=0;
         while (count<carNumLen):
-            browser.find_by_value(params['toSearchCarNum'][count]).click();
+            browser.find_by_value(params['toSearchCarNum'][count]).last.click();#防止有相同数字或字母后，下次自动点击到上方输入框的值上边
+            time.sleep(0.3)
             count=count+1;
 
     time.sleep(1)
@@ -91,8 +92,14 @@ def autoPayMachineTest(params):
     payBtn = browser.find_by_css('.payBtn').first;
     payBtn.click();
     time.sleep(1)
-    browser.execute_script("$('h1:contains(\"云A23456\")').next().next().next().click()");
+
+    # browser.find_by_css('.carscontent li:eq(0)').first;
+
+    browser.execute_script("$('.carscontent li:eq(0) p').click()");
     time.sleep(1)
+    # 老版本的话直接返回
+    if params['isOld']:
+        return;
     # //注册
     registerBtn=browser.find_by_css(".memberLoginRegister a:last-child").first;
     registerBtn.click();
@@ -110,7 +117,7 @@ def autoPayMachineTest(params):
     time.sleep(1)
     register.click();
 
-    time.sleep(2)
+    time.sleep(1)
     modalText=browser.find_by_css('.tjdModal_mainTitle').first;
     if modalText.visible:
         print(modalText.value)
@@ -174,12 +181,20 @@ def autoPayMachineTest(params):
 # loginByPhone('18601965856');
 # deleteCars();
 # autoPayMachineTest("e28aa5b26b6942b2a401306f623da0ee","京A23456",'19421025025',1,4);
+# autoPayMachineTest({
+#     'selfMacId':'e28aa5b26b6942b2a401306f623da0ee',
+#     'toSearchCarNum':'京A23456',
+#     'phone':'19421025121',
+#     'isExhangeAllTickets':False, #是否兑换所有停车券
+#     'commonTicketsNum':6     #兑换普通停车券的张数
+# });
 autoPayMachineTest({
-    'selfMacId':'e28aa5b26b6942b2a401306f623da0ee',
-    'toSearchCarNum':'京A23456',
+    'selfMacId':'1aca5a1fd245493cb124b38bfa96880d',
+    'toSearchCarNum':'晋BRQ444',
     'phone':'19421025121',
     'isExhangeAllTickets':False, #是否兑换所有停车券
-    'commonTicketsNum':6     #兑换普通停车券的张数
+    'commonTicketsNum':6,   #兑换普通停车券的张数,
+    'isOld':True#是否老版本的缴费机（无会员积分系统）
 });
 
 
