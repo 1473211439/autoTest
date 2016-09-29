@@ -27,21 +27,17 @@ def loginByPhone(phone):
     phoneInput[0].fill(phone)
     getYzmBtn[0].click();
     yzmInput.fill(yzm)
+    browser.execute_script('sessionStorage.isTest=1;')
     loginButton.click();
 def go2MyCar():
-    print(6)
     browser.find_link_by_partial_href('go2Car')[0].click();
-    print(7)
 
 #删除当前用户下所有汽车
 def deleteCars():
     loginByPhone('18601965856');
     browser.execute_script('sessionStorage.isTest=1;')
-    print(3)
     go2MyCar();
-    print(1)
     cars=browser.find_by_css('.delete img');
-    print(2)
     print("车辆总数:",len(cars))
     if(len(cars)>0):
         for car in cars:
@@ -50,16 +46,115 @@ def deleteCars():
             nowcars.first.click();
             time.sleep(2)
             btn = browser.find_by_css('.modal_confirm_btn')[0];
-            print(btn.visible)
             btn.click();
             time.sleep(1)
             cancel = browser.find_by_css('.modal_cancel_btn')[0];
-            print(cancel)
             cancel.click();
             time.sleep(1)
 
     cars = browser.find_by_css('.delete img');
     print("剩余汽车数量：",len(cars))
+
+def fillCarNum(carNum):
+    count=0;
+    for c in carNum:
+        browser.find_by_value(c).last.click()
+        time.sleep(0.3);
+def fillCarColor(color):
+    browser.execute_script("$(\"span[color='" + color + "']:visible\").click()");
+    # browser.find_by_css("span[color='" + color + "']:visible").first.click();
+    time.sleep(0.5)
+#添加汽车
+def addCar(carNum,color):
+    time.sleep(1)
+    addBtn = browser.find_by_css('.con a img');
+    if len(addBtn) > 0:
+        addBtn = addBtn.first;
+        if addBtn.visible:
+            addBtn.click();
+        else:
+            return;
+    else:
+        return;
+
+    time.sleep(1)
+    fillCarNum(carNum)
+    # //车牌颜色
+    fillCarColor(color);
+    browser.find_by_css(".revise").first.click();
+    time.sleep(0.5)
+    browser.find_by_css(".modal_confirm_btn").last.click();
+    time.sleep(2)
+    browser.find_by_css(".modal_cancel_btn").last.click();
+def modalConfirm():
+    oneConfirmBtn=browser.find_by_css(".modal_cancel_btn").first;
+    twoConfirmBtn=browser.find_by_css(".modal_confirm_btn").first;
+    if twoConfirmBtn.visible:
+        twoConfirmBtn.click();
+    else:
+        oneConfirmBtn.click();
+def uptCar(oldCarNum,newCarNum,newColor):
+    old=browser.find_by_text(oldCarNum);
+    if(len(old)>0):
+        old=old.first;
+        if(old.visible):
+            browser.execute_script("$('p:contains(\""+oldCarNum+"\")').parent().find('.carstate:visible').find('a:last').find('span').click()");
+            time.sleep(1)
+            fillCarNum(newCarNum)
+            time.sleep(1)
+            fillCarColor(newColor)
+            time.sleep(0.5)
+            browser.find_by_css(".revise").first.click();
+            time.sleep(0.5)
+            modalConfirm();
+            time.sleep(3)
+            modalConfirm();
+    else:
+        print("要修改的车牌号不存在！！！")
+def verifyCar(carNum,motorNum,viNum):
+    old=browser.find_by_text(carNum);
+    if(len(old)>0):
+        old=old.first;
+        if(old.visible):
+            m=browser.execute_script("$('p:contains(\""+carNum+"\")').parent().find('.carstate:visible').find('a:first').find('span').click()");
+            motorNumInput=browser.find_by_css('.motorNum');
+            viNumInput=browser.find_by_css('.viNumInput');
+            if (len(motorNumInput)<1 and len(viNumInput)<1):
+                print("请先激活车辆！！！")
+                return;
+
+            if len(motorNumInput)==1:
+                if motorNumInput.first.visible:
+                    motorNumInput.first.fill(motorNum)
+            if len(viNumInput)==1:
+                if viNumInput.first.visible:
+                    viNumInput.first.fill(viNum)
+            if motorNumInput.first.visible==False and viNumInput.first.visible==False:
+                return;
+            time.sleep(1);
+            browser.find_by_css(".revise").last.click();
+            time.sleep(1)
+            modalConfirm()
+            time.sleep(5)
+            modalConfirm()
+        else:
+            print("输入的车牌号不可见！！！")
+    else:
+        print("要验证的车牌号不存在！！！")
+def activateCar(carNum):
+    old=browser.find_by_text(carNum);
+    if(len(old)>0):
+        old=old.first;
+        if(old.visible):
+            m=browser.execute_script("$('p:contains(\""+carNum+"\")').parent().find('.carstate:visible').find('a:last').find('span').click()");
+            time.sleep(1)
+            modalConfirm()
+            time.sleep(5)
+            modalConfirm()
+        else:
+            print("输入的车牌号不可见！！！")
+    else:
+        print("要验证的车牌号不存在！！！")
 
 def autoPayMachineTest(params):
     commonYzm="1025";
@@ -188,30 +283,24 @@ def autoPayMachineTest(params):
 #     'isExhangeAllTickets':False, #是否兑换所有停车券
 #     'commonTicketsNum':6     #兑换普通停车券的张数
 # });
-autoPayMachineTest({
-    'selfMacId':'1aca5a1fd245493cb124b38bfa96880d',
-    'toSearchCarNum':'晋BRQ444',
-    'phone':'19421025121',
-    'isExhangeAllTickets':False, #是否兑换所有停车券
-    'commonTicketsNum':6,   #兑换普通停车券的张数,
-    'isOld':True#是否老版本的缴费机（无会员积分系统）
-});
+# autoPayMachineTest({
+#     'selfMacId':'1aca5a1fd245493scb124b38bfa96880d',
+#     'toSearchCarNum':'晋BRQ444',
+#     'phone':'19421025121',
+#     'isExhangeAllTickets':False, #是否兑换所有停车券
+#     'commonTicketsNum':6,   #兑换普通停车券的张数,
+#     'isOld':True#是否老版本的缴费机（无会员积分系统）
+# });
+
+loginByPhone('18601965856');
+go2MyCar();
+# addCar("鲁A961T7",'blue')
+
+# uptCar("苏B90878",'苏M10878','black')
+# verifyCar("鲁A961T7",'A9ND03414','L6T7844SXAN044880')
+activateCar("鲁A961T7")
 
 
 
 
-
-
-
-
-# browser.Navigate().GoToUrl(url);
-# browser.fill('q', 'splinter - python acceptance testing for web applications')
-# # Find and click the 'search' button
-# button = browser.find_by_name('btnG')
-# # Interact with elements
-#
-# if browser.is_text_present('splinter.cobrateam.info'):
-#     print("Yes, the official website was found!")
-# else:
-#     print("No, it wasn't found... We need to improve our SEO techniques")
 
